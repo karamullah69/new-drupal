@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     // Check out the code from your Git repository
-                    git 'https://karamullah69/new-drupal.git'
+                    git 'https://your.git.repo/url.git'
                 }
             }
         }
@@ -19,8 +19,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    
-                    // Perform any build steps if necessary
+                    // Copy the HTML landing page to the Drupal root directory
+                    sh "cp path/to/your/landing-page.html ${DRUPAL_ROOT}/"
                 }
             }
         }
