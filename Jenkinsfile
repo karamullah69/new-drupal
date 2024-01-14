@@ -16,35 +16,46 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build and Push Docker Images') {
             steps {
                 script {
-                    // Copy the HTML landing page to the Drupal root directory
-                    sh "cp path/to/your/landing-page.html ${DRUPAL_ROOT}/"
+                    docker.build("hello-world-1:${env.BUILD_NUMBER}")
+                    docker.build("hello-world-2:${env.BUILD_NUMBER}")
+                    docker.withRegistry('https://your-docker-registry/', 'docker-registry-credentials') {
+                        docker.image("hello-world-1:${env.BUILD_NUMBER}").push()
+                        docker.image("hello-world-2:${env.BUILD_NUMBER}").push()
+                    }
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Deploy the code to the Drupal server
-                    sh "rsync -avz --delete ./ ${DRUPAL_ROOT}/"
-                    
-                    // Run Drush commands to update Drupal database and clear cache
-                    sh "${DRUSH} -y -r ${DRUPAL_ROOT} updatedb"
-                    sh "${DRUSH} -y -r ${DRUPAL_ROOT} cache:rebuild"
+                    // Deploy Drupal applications
+                    kubernetesDeploy(
+                        kubeconfigId: 'your-kubeconfig',
+                        configs: 'drupal-app1.yaml,drupal-app2.yaml',
+                        enableConfigSubstitution: true,
+                        secretName: 'your-k8s-secret'
+                    )
+
+                    // Copy HTML file to Drupal pod
+                    kubernetesExec(
+                        kubeconfigId: 'your-kubeconfig',
+                        podName: 'drupal-app1-6695984fbc-wwv8h', // Update with the actual pod name
+                        containerName: 'drupal',
+                        command: ['cp', '/var/www/html/hello-world.html', '/var/www/html/sites/default/']
+                    )
+
+                    kubernetesExec(
+                        kubeconfigId: 'your-kubeconfig',
+                        podName: 'drupal-app2-7ff667b74-kh5nz', // Update with the actual pod name
+                        containerName: 'drupal',
+                        command: ['cp', '/var/www/html/hello-world.html', '/var/www/html/sites/default/']
+                    )
                 }
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment successful!'
-        }
-        failure {
-            echo 'Deployment failed!'
         }
     }
 }
