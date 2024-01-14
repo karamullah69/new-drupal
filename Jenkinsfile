@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     // Check out the code from your Git repository
-                    git 'https://your.git.repo/url.git'
+                    git 'https://karamullah69/new-drupal.git'
                 }
             }
         }
