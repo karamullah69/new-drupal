@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     // Check out the code from your Git repository
-                    git 'https://github.com/karamullah69/new-drupal.git'
+                    git credentialsId: '7e710353-4472-4a04-a661-0a06ac7ddcea', url: 'https://github.com/karamullah69/new-drupal.git'
                 }
             }
         }
