@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal-app1
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+  selector:
+    app: drupal-app1
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: drupal-app1
+  name: drupal-app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal-app1  # Ensure this matches the labels in the template
+  template:
+    metadata:
+      labels:
+        app: drupal-app1  # Ensure this matches the selector labels
+    spec:
+      initContainers:
+        - name: init-sites-volume
+          image: drupal:8.6
+          command: ['/bin/bash', '-c']
+          args: ['cp -r /var/www/html/sites/ /data/; chown www-data:www-data /data/ -R']
+          volumeMounts:
+            - mountPath: /data
+              name: vol-drupal
+      containers:
+        - image: drupal:8.6
+          name: drupal-app1
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /var/www/html/modules
+              name: vol-drupal
+              subPath: modules
+            - mountPath: /var/www/html/profiles
+              name: vol-drupal
+              subPath: profiles
+            - mountPath: /var/www/html/sites
+              name: vol-drupal
+              subPath: sites
+            - mountPath: /var/www/html/themes
+              name: vol-drupal
+              subPath: themes
+      volumes:
+        - name: vol-drupal
+          persistentVolumeClaim:
+            claimName: drupal-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal-app2
+spec:
+  ports:
+    - name: http
+      port: 81
+      protocol: TCP
+  selector:
+    app: drupal-app2
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: drupal-app2
+  name: drupal-app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal-app2  # Ensure this matches the labels in the template
+  template:
+    metadata:
+      labels:
+        app: drupal-app2  # Ensure this matches the selector labels
+    spec:
+      initContainers:
+        - name: init-sites-volume
+          image: drupal:8.6
+          command: ['/bin/bash', '-c']
+          args: ['cp -r /var/www/html/sites/ /data/; chown www-data:www-data /data/ -R']
+          volumeMounts:
+            - mountPath: /data
+              name: vol-drupal
+      containers:
+        - image: drupal:8.6
+          name: drupal-app2
+          ports:
+            - containerPort: 81
+          volumeMounts:
+            - mountPath: /var/www/html/modules
+              name: vol-drupal
+              subPath: modules
+            - mountPath: /var/www/html/profiles
+              name: vol-drupal
+              subPath: profiles
+            - mountPath: /var/www/html/sites
+              name: vol-drupal
+              subPath: sites
+            - mountPath: /var/www/html/themes
+              name: vol-drupal
+              subPath: themes
+      volumes:
+        - name: vol-drupal
+          persistentVolumeClaim:
+            claimName: drupal-pvc

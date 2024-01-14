@@ -1,0 +1,52 @@
+# drupal-mysql.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal-mysql-service
+spec:
+  selector:
+    app: drupal-mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal-mysql
+  template:
+    metadata:
+      labels:
+        app: drupal-mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: root
+        - name: MYSQL_DATABASE
+          value: drupal-database
+        - name: MYSQL_USER
+          value: drupal
+        - name: MYSQL_PASSWORD
+          value: root
+        ports:
+        - containerPort: 3306
+        
+        volumeMounts: 
+            - 
+              mountPath: /var/lib/mysql
+              name: vol-drupal
+              subPath: dbdata
+      volumes: 
+        - 
+          name: vol-drupal
+          persistentVolumeClaim: 
+            claimName: drupal-pvc-mysql
