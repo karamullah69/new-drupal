@@ -21,7 +21,7 @@ pipeline {
                 script {
                     docker.build("hello-world-1:${env.BUILD_NUMBER}")
                     docker.build("hello-world-2:${env.BUILD_NUMBER}")
-                    docker.withRegistry('https://your-docker-registry/', 'docker-registry-credentials') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-credentials') {
                         docker.image("hello-world-1:${env.BUILD_NUMBER}").push()
                         docker.image("hello-world-2:${env.BUILD_NUMBER}").push()
                     }
