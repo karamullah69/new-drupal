@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        node {
+            label 'docker-agent-alpine'
+        }
+    }
 
     environment {
         DRUPAL_ROOT = '/var/www/html'  // Adjust the Drupal root directory
